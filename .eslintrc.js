@@ -33,7 +33,7 @@ module.exports = {
         "consistent-this": "error",
         "curly": "off",
         "default-case": "error",
-        "dot-location": "error",
+        "dot-location": "off",
         "dot-notation": [
             "error",
             {
@@ -67,10 +67,7 @@ module.exports = {
         "max-statements-per-line": "error",
         "new-cap": "error",
         "new-parens": "error",
-        "newline-after-var": [
-            "error",
-            "always"
-        ],
+        "newline-after-var": "off",
         "newline-before-return": "error",
         "newline-per-chained-call": "error",
         "no-alert": "error",
@@ -205,6 +202,8 @@ module.exports = {
         "yoda": [
             "error",
             "never"
-        ]
+        ],
+        "no-console": "off",
+        "no-unused-vars": "off"
     }
 };

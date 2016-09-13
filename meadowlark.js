@@ -5,7 +5,7 @@ const app = express();
 
 // set up handlebars view engine
 const handlebars = require('express-handlebars')
-	.create({ defaultLayout:'main' });
+	.create({defaultLayout: 'main'});
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 
@@ -28,8 +28,8 @@ app.get('/', function(req, res){
 
 // About page
 app.get('/about', function(req, res){
-  res.render('about', { fortune : fortune.getFortune(),
-                        pageTestScript: '/qa/tests-about.js' });
+  res.render('about', {fortune: fortune.getFortune(),
+                        pageTestScript: '/qa/tests-about.js'});
 });
 
 // Hood River Tour page
