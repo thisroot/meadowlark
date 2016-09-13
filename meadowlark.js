@@ -4,8 +4,16 @@ const fortune = require('./lib/fortune.js');
 const app = express();
 
 // set up handlebars view engine
-const handlebars = require('express-handlebars')
-	.create({defaultLayout: 'main'});
+const handlebars = require('express-handlebars').create({
+    defaultLayout:'main',
+    helpers: {
+        section: function(name, options){
+            if(!this._sections) this._sections = {};
+            this._sections[name] = options.fn(this);
+            return null;
+        }
+    }
+});
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 
@@ -20,6 +28,49 @@ app.use(function(req, res, next){
 
 // Setup the static route for assets
 app.use(express.static(__dirname + '/public'));
+
+// Setup body-parser package
+app.use(require('body-parser')());
+
+// mocked weather data
+function getWeatherData(){
+    return {
+        locations: [
+            {
+                name: 'Portland',
+                forecastUrl: 'http://www.wunderground.com/US/OR/Portland.html',
+                iconUrl: 'http://icons-ak.wxug.com/i/c/k/cloudy.gif',
+                weather: 'Overcast',
+                temp: '54.1 F (12.3 C)',
+            },
+            {
+                name: 'Bend',
+                forecastUrl: 'http://www.wunderground.com/US/OR/Bend.html',
+                iconUrl: 'http://icons-ak.wxug.com/i/c/k/partlycloudy.gif',
+                weather: 'Partly Cloudy',
+                temp: '55.0 F (12.8 C)',
+            },
+            {
+                name: 'Manzanita',
+                forecastUrl: 'http://www.wunderground.com/US/OR/Manzanita.html',
+                iconUrl: 'http://icons-ak.wxug.com/i/c/k/rain.gif',
+                weather: 'Light Rain',
+                temp: '55.0 F (12.8 C)',
+            },
+        ],
+    };
+}
+
+// middleware to add weather data to context
+app.use(function(req, res, next){
+	if(!res.locals.partials) res.locals.partials = {};
+ 	res.locals.partials.weatherContext = getWeatherData();
+ 	next();
+});
+
+app.get('/jquery-test', function(req, res){
+    res.render('jquery-test');
+});
 
 // Main site page
 app.get('/', function(req, res){
@@ -42,6 +93,11 @@ app.get('/tours/request-group-rate', function(req, res){
   res.render('tours/request-group-rate');
 });
 
+app.post('/tours/process-group-rate', function(req, res){
+  // console.log(req.body.name + ', ' + req.body.groupSize + ', ' + req.body.email);
+  console.log(req.body);
+  res.render('tours/process-group-rate');
+});
 
 // custom 404 page
 app.use(function (req, res) {
