@@ -68,10 +68,6 @@ app.use(function(req, res, next){
  	next();
 });
 
-app.get('/jquery-test', function(req, res){
-    res.render('jquery-test');
-});
-
 // Main site page
 app.get('/', function(req, res){
   res.render('home');
@@ -93,11 +89,21 @@ app.get('/tours/request-group-rate', function(req, res){
   res.render('tours/request-group-rate');
 });
 
+// Begin Demo routes
 app.post('/tours/process-group-rate', function(req, res){
   // console.log(req.body.name + ', ' + req.body.groupSize + ', ' + req.body.email);
   console.log(req.body);
   res.render('tours/process-group-rate');
 });
+
+app.get('/jquery-test', function(req, res){
+    res.render('jquery-test');
+});
+
+app.get('/nursery-rhyme', function(req, res){
+    res.render('nursery-rhyme');
+});
+
 
 // custom 404 page
 app.use(function (req, res) {
