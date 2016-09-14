@@ -63,9 +63,9 @@ function getWeatherData(){
 
 // middleware to add weather data to context
 app.use(function(req, res, next){
-	if(!res.locals.partials) res.locals.partials = {};
- 	res.locals.partials.weatherContext = getWeatherData();
- 	next();
+    if(!res.locals.partials) res.locals.partials = {};
+     res.locals.partials.weatherContext = getWeatherData();
+     next();
 });
 
 // Main site page
@@ -87,6 +87,25 @@ app.get('/tours/hood-river', function(req, res){
 // Request Quote page
 app.get('/tours/request-group-rate', function(req, res){
   res.render('tours/request-group-rate');
+});
+
+// Newsletter form page
+app.get('/newsletter', function(req, res){
+  res.render('newsletter', {csrf: 'CSRF token goes here'});
+});
+
+// Post from Newsletter form page
+app.post('/process', function(req, res){
+    if(req.xhr || req.accepts('json,html') === 'json') {
+        res.send({success: true});
+    } else {
+        res.redirect(303, '/thank-you')
+    }
+});
+
+// Newsletter form page
+app.get('/thank-you', function(req, res){
+  res.send('Thanks');
 });
 
 // Begin Demo routes
