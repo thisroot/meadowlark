@@ -5,11 +5,12 @@ const app = express();
 
 // set up handlebars view engine
 const handlebars = require('express-handlebars').create({
-    defaultLayout:'main',
+    defaultLayout: 'main',
     helpers: {
-        section: function(name, options){
+        section: function (name, options) {
             if(!this._sections) this._sections = {};
             this._sections[name] = options.fn(this);
+            
             return null;
         }
     }
@@ -20,7 +21,7 @@ app.set('view engine', 'handlebars');
 app.set('port', process.env.PORT || 3000);
 
 // Flag pass in query param to turn on tests
-app.use(function(req, res, next){
+app.use( function (req, res, next){
   res.locals.showTests = app.get('env') !== 'production' &&
     req.query.test === '1';
     next();
@@ -62,40 +63,40 @@ function getWeatherData(){
 }
 
 // middleware to add weather data to context
-app.use(function(req, res, next){
+app.use(function (req, res, next) {
     if(!res.locals.partials) res.locals.partials = {};
      res.locals.partials.weatherContext = getWeatherData();
      next();
 });
 
 // Main site page
-app.get('/', function(req, res){
+app.get('/', function (req, res) {
   res.render('home');
 });
 
 // About page
-app.get('/about', function(req, res){
+app.get('/about', function (req, res) {
   res.render('about', {fortune: fortune.getFortune(),
                         pageTestScript: '/qa/tests-about.js'});
 });
 
 // Hood River Tour page
-app.get('/tours/hood-river', function(req, res){
+app.get('/tours/hood-river', function (req, res) {
   res.render('tours/hood-river');
 });
 
 // Request Quote page
-app.get('/tours/request-group-rate', function(req, res){
+app.get('/tours/request-group-rate', function (req, res) {
   res.render('tours/request-group-rate');
 });
 
 // Newsletter form page
-app.get('/newsletter', function(req, res){
+app.get('/newsletter', function (req, res) {
   res.render('newsletter', {csrf: 'CSRF token goes here'});
 });
 
 // Post from Newsletter form page
-app.post('/process', function(req, res){
+app.post('/process', function (req, res) {
     if(req.xhr || req.accepts('json,html') === 'json') {
         res.send({success: true});
     } else {
@@ -104,22 +105,22 @@ app.post('/process', function(req, res){
 });
 
 // Newsletter form page
-app.get('/thank-you', function(req, res){
+app.get('/thank-you', function (req, res) {
   res.send('Thanks');
 });
 
 // Begin Demo routes
-app.post('/tours/process-group-rate', function(req, res){
+app.post('/tours/process-group-rate', function (req, res) {
   // console.log(req.body.name + ', ' + req.body.groupSize + ', ' + req.body.email);
   console.log(req.body);
   res.render('tours/process-group-rate');
 });
 
-app.get('/jquery-test', function(req, res){
+app.get('/jquery-test', function (req, res) {
     res.render('jquery-test');
 });
 
-app.get('/nursery-rhyme', function(req, res){
+app.get('/nursery-rhyme', function (req, res) {
     res.render('nursery-rhyme');
 });
 
@@ -137,7 +138,7 @@ app.use(function (err, req, res, next) {
   res.render('500');
 });
 
-app.listen(app.get('port'), function(){
+app.listen(app.get('port'), function () {
   console.log('Express started on http://localhost:' + 
     app.get('port') + '; press Ctrl-C to terminate.');
 });
