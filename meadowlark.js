@@ -1,7 +1,7 @@
 const express = require('express');
 const fortune = require('./lib/fortune.js');
 const formidable = require('formidable');
-const jqupload = require('jquery-file-upload-middleware');
+const credentials = require('./credentials.js');
 
 const app = express();
 
@@ -21,6 +21,9 @@ app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 
 app.set('port', process.env.PORT || 3000);
+
+// Package to set/get cookies
+app.use(require('cookie-parser')(credentials.cookieSecret));
 
 // Flag pass in query param to turn on tests
 app.use( function (req, res, next){
@@ -73,6 +76,7 @@ app.use(function (req, res, next) {
 
 // Main site page
 app.get('/', function (req, res) {
+  res.clearCookie('signed_rey');
   res.render('home');
 });
 
