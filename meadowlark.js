@@ -1,17 +1,17 @@
-var http = require('http'),
-	express = require('express'),
-	fortune = require('./lib/fortune.js'),
-	formidable = require('formidable');
+const http = require('http');
+const express = require('express');
+const fortune = require('./lib/fortune.js');
+const formidable = require('formidable');
 
-var app = express();
+const app = express();
 
-var credentials = require('./credentials.js');
+const credentials = require('./credentials.js');
 
-var emailService = require('./lib/email.js')(credentials);
+const emailService = require('./lib/email.js')(credentials);
 
 // set up handlebars view engine
-var handlebars = require('express-handlebars').create({
-    defaultLayout:'main',
+const handlebars = require('express-handlebars').create({
+    defaultLayout: 'main',
     helpers: {
         section: function(name, options){
             if(!this._sections) this._sections = {};
@@ -316,7 +316,7 @@ app.get('/adventures/:subcat/:name', function(req, res, next){
 	});
 });
 
-var cartValidation = require('./lib/cartValidation.js');
+const cartValidation = require('./lib/cartValidation.js');
 
 app.use(cartValidation.checkWaivers);
 app.use(cartValidation.checkGuestCounts);
