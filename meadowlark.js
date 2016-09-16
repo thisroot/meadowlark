@@ -6,8 +6,10 @@ var app = express();
 
 var credentials = require('./credentials.js');
 
+var emailService = require('./lib/email.js')(credentials);
+
 // set up handlebars view engine
-var handlebars = require('express-handlebars').create({
+var handlebars = require('express3-handlebars').create({
     defaultLayout:'main',
     helpers: {
         section: function(name, options){
@@ -262,20 +264,54 @@ app.use(cartValidation.checkWaivers);
 app.use(cartValidation.checkGuestCounts);
 
 app.post('/cart/add', function(req, res, next){
-	var cart = req.session.cart || (req.session.cart = []);
+	var cart = req.session.cart || (req.session.cart = { items: [] });
 	Product.findOne({ sku: req.body.sku }, function(err, product){
 		if(err) return next(err);
 		if(!product) return next(new Error('Unknown product SKU: ' + req.body.sku));
-		cart.push({
+		cart.items.push({
 			product: product,
 			guests: req.body.guests || 0,
 		});
 		res.redirect(303, '/cart');
 	});
 });
-app.get('/cart', function(req, res){
-	var cart = req.session.cart || (req.session.cart = []);
+app.get('/cart', function(req, res, next){
+	var cart = req.session.cart;
+	if(!cart) next();
 	res.render('cart', { cart: cart });
+});
+app.get('/cart/checkout', function(req, res, next){
+	var cart = req.session.cart;
+	if(!cart) next();
+	res.render('cart-checkout');
+});
+app.get('/cart/thank-you', function(req, res){
+	res.render('cart-thank-you', { cart: req.session.cart });
+});
+app.get('/email/cart/thank-you', function(req, res){
+	res.render('email/cart-thank-you', { cart: req.session.cart, layout: null });
+});
+app.post('/cart/checkout', function(req, res){
+	var cart = req.session.cart;
+	if(!cart) next(new Error('Cart does not exist.'));
+	var name = req.body.name || '', email = req.body.email || '';
+	// input validation
+	if(!email.match(VALID_EMAIL_REGEX)) return res.next(new Error('Invalid email address.'));
+	// assign a random cart ID; normally we would use a database ID here
+	cart.number = Math.random().toString().replace(/^0\.0*/, '');
+	cart.billing = {
+		name: name,
+		email: email,
+	};
+    res.render('email/cart-thank-you', 
+    	{ layout: null, cart: cart }, function(err,html){
+	        if( err ) console.log('error in email template');
+	        emailService.send(cart.billing.email,
+	        	'Thank you for booking your trip with Meadowlark Travel!',
+	        	html);
+	    }
+    );
+    res.render('cart-thank-you', { cart: cart });
 });
 
 // 404 catch-all handler (middleware)
