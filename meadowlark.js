@@ -5,10 +5,11 @@ require('./db/connect.js');
 require('./db/seed.js');
 
 const http = require('http');
+const fs = require('fs');
 const express = require('express');
 const fortune = require('./lib/fortune.js');
 const formidable = require('formidable');
-const Vacation = require('./models/vacation.js');
+// const Vacation = require('./models/vacation.js');
 
 const app = express();
 
@@ -298,17 +299,46 @@ app.get('/contest/vacation-photo', function(req, res){
     var now = new Date();
     res.render('contest/vacation-photo', { year: now.getFullYear(), month: now.getMonth() });
 });
+
+// make sure data directory exists
+var dataDir = __dirname + '/data';
+var vacationPhotoDir = dataDir + '/vacation-photo';
+if(!fs.existsSync(dataDir)) fs.mkdirSync(dataDir); 
+if(!fs.existsSync(vacationPhotoDir)) fs.mkdirSync(vacationPhotoDir);
+
+function saveContestEntry(contestName, email, year, month, photoPath){
+    // TODO...this will come later
+}
+
 app.post('/contest/vacation-photo/:year/:month', function(req, res){
     var form = new formidable.IncomingForm();
     form.parse(req, function(err, fields, files){
-        if(err) return res.redirect(303, '/error');
-        console.log('received fields:');
-        console.log(fields);
-        console.log('received files:');
-        console.log(files);
-        res.redirect(303, '/thank-you');
+        if(err) {
+            req.session.flash = {
+                type: 'danger',
+                intro: 'Oops!',
+                message: 'There was an error processing your submission. ' +
+                    'Pelase try again.',
+            };
+            return res.redirect(303, '/contest/vacation-photo');
+        }
+        var photo = files.photo;
+        var dir = vacationPhotoDir + '/' + Date.now();
+        var path = dir + '/' + photo.name;
+        fs.mkdirSync(dir);
+        fs.renameSync(photo.path, dir + '/' + photo.name);
+        saveContestEntry('vacation-photo', fields.email,
+            req.params.year, req.params.month, path);
+        req.session.flash = {
+            type: 'success',
+            intro: 'Good luck!',
+            message: 'You have been entered into the contest.',
+        };
+        return res.redirect(303, '/contest/vacation-photo/entries');
     });
 });
+
+
 app.get('/tours/:tour', function(req, res, next){
 	Product.findOne({ category: 'tour', slug: req.params.tour }, function(err, tour){
 		if(err) return next(err);
