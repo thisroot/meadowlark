@@ -1,4 +1,4 @@
-const mongoose = require('../connect.js');
+const mongoose = require('mongoose');
 
 const vacationSchema = mongoose.Schema({
   name: String,
