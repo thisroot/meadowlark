@@ -9,7 +9,7 @@ const fs = require('fs');
 const express = require('express');
 const fortune = require('./lib/fortune.js');
 const formidable = require('formidable');
-// const Vacation = require('./models/vacation.js');
+const Vacation = require('./models/vacation.js');
 
 const app = express();
 
@@ -338,6 +338,23 @@ app.post('/contest/vacation-photo/:year/:month', function(req, res){
     });
 });
 
+app.get('/vacations', function(req, res){
+  // Pull vacation collection data and pass the object to the view called vacations... 
+  Vacation.find({available: true}, function(err, vacations){
+    let context = {
+      vacations: vacations.map(function(vacation){
+        return {
+          sku: vacation.sku,
+          name: vacation.name,
+          description: vacation.description,
+          price: vacation.getDisplayPrice(),
+          inSeason: vacation.inSeason
+        };
+      })
+    };
+    res.render('vacations', context);
+  });
+});
 
 app.get('/tours/:tour', function(req, res, next){
 	Product.findOne({ category: 'tour', slug: req.params.tour }, function(err, tour){

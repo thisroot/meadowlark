@@ -16,7 +16,7 @@ const vacationSchema = mongoose.Schema({
   packagesSold: Number
 });
 
-vacationSchema.methods.getDisplayPrice = () => {
+vacationSchema.methods.getDisplayPrice = function() {
   return '$' + (this.priceInCents / 100).toFixed(2);
 };
 
