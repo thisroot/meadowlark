@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const env = require('../environment');
-const config = require('./config');
+const credentials = require('../credentials');
 
 // Mongoose options
 const opts = {
@@ -9,6 +9,6 @@ const opts = {
   }
 };
 
-mongoose.connect(config[env].url, opts);
+mongoose.connect(credentials.mongo[env], opts);
 
 
