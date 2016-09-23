@@ -10,6 +10,7 @@ const express = require('express');
 const fortune = require('./lib/fortune.js');
 const formidable = require('formidable');
 const Vacation = require('./models/vacation.js');
+const VacationInSeasonListener = require('./models/vacationInSeasonListener.js');
 
 const app = express();
 
@@ -347,17 +348,17 @@ app.get('/vacations', function(req, res) {
   // Pull vacation collection data and pass the object to the view called vacations... 
   Vacation.find({
     available: true
-    }, function(err, vacations) {
-      let context = {
-        vacations: vacations.map(function(vacation) {
-          return {
-            sku: vacation.sku,
-            name: vacation.name,
-            description: vacation.description,
-            price: vacation.getDisplayPrice(),
-            inSeason: vacation.inSeason
-          };
-        })
+  }, function(err, vacations) {
+    let context = {
+      vacations: vacations.map(function(vacation) {
+        return {
+          sku: vacation.sku,
+          name: vacation.name,
+          description: vacation.description,
+          price: vacation.getDisplayPrice(),
+          inSeason: vacation.inSeason
+        };
+      })
     };
     res.render('vacations', context);
   });
@@ -457,6 +458,42 @@ app.post('/cart/checkout', function(req, res) {
   res.render('cart-thank-you', {
     cart: cart
   });
+});
+
+app.get('/notify-me-when-in-season', function(req, res) {
+  res.render('notify-me-when-in-season', {
+    sku: req.query.sku
+  });
+});
+
+app.post('/notify-me-when-in-season', function(req, res) {
+  VacationInSeasonListener.update({
+      email: req.body.email
+    }, {
+      $push: {
+        skus: req.body.sku
+      }
+    }, {
+      upsert: true
+    },
+    function(err) {
+      if (err) {
+        console.error(err.stack);
+        req.session.flash = {
+          type: 'danger',
+          intro: 'Ooops!',
+          message: 'There was an error processing your request.',
+        };
+        return res.redirect(303, '/vacations');
+      }
+      req.session.flash = {
+        type: 'success',
+        intro: 'Thank you!',
+        message: 'You will be notified when this vacation is in season.',
+      };
+      return res.redirect(303, '/vacations');
+    }
+  );
 });
 
 app.get('/epic-fail', function(req, res) {
