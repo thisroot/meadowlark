@@ -11,6 +11,7 @@ const fortune = require('./lib/fortune.js');
 const formidable = require('formidable');
 const Vacation = require('./models/vacation.js');
 const VacationInSeasonListener = require('./models/vacationInSeasonListener.js');
+const mongoose = require('mongoose');
 
 const app = express();
 
@@ -93,13 +94,21 @@ switch (app.get('env')) {
     break;
 }
 
+const session = require('express-session');
+const MongoStore = require('connect-mongo')(session);
 
 app.use(require('cookie-parser')(credentials.cookieSecret));
-app.use(require('express-session')({
+app.use(session({
   resave: false,
   saveUninitialized: false,
   secret: credentials.cookieSecret,
 }));
+
+// Create the store for the session. 
+app.use(session({
+    store: new MongoStore({ mongooseConnection: mongoose.connection })
+}));
+
 app.use(express.static(__dirname + '/public'));
 app.use(require('body-parser')());
 
