@@ -12,6 +12,7 @@ const formidable = require('formidable');
 const Vacation = require('./models/vacation.js');
 const VacationInSeasonListener = require('./models/vacationInSeasonListener.js');
 const mongoose = require('mongoose');
+const session = require('express-session');
 
 const app = express();
 
@@ -94,22 +95,30 @@ switch (app.get('env')) {
     break;
 }
 
-const session = require('express-session');
-const MongoStore = require('connect-mongo')(session);
-
 app.use(require('cookie-parser')(credentials.cookieSecret));
+
+/* Code for saving sessions in memory via cookies...  
 app.use(session({
   resave: false,
   saveUninitialized: false,
   secret: credentials.cookieSecret,
-}));
+})); */
 
-// Create the store for the session. 
+// Create a Mongo store to manage sessions
+const MongoStore = require('connect-mongo')(session);
+
+// Instantiate new Mongo store for the session & reuse Mongoose DB connection 
 app.use(session({
-    store: new MongoStore({ mongooseConnection: mongoose.connection })
+  secret: credentials.cookieSecret,
+  store: new MongoStore({
+    mongooseConnection: mongoose.connection
+  })
 }));
 
+// Define the dir for static files like images
 app.use(express.static(__dirname + '/public'));
+
+// middleware to manage forms
 app.use(require('body-parser')());
 
 // flash message middleware
@@ -353,22 +362,48 @@ app.post('/contest/vacation-photo/:year/:month', function(req, res) {
   });
 });
 
+function convertFromUSD(value, currency) {
+  switch (currency) {
+    case 'USD':
+      return value * 1;
+    case 'GBP':
+      return value * 0.6;
+    case 'BTC':
+      return value * 0.0023707918444761;
+    default:
+      return NaN;
+  }
+}
+
 app.get('/vacations', function(req, res) {
-  // Pull vacation collection data and pass the object to the view called vacations... 
   Vacation.find({
     available: true
   }, function(err, vacations) {
-    let context = {
+    var currency = req.session.currency || 'USD';
+    var context = {
+      currency: currency,
       vacations: vacations.map(function(vacation) {
         return {
           sku: vacation.sku,
           name: vacation.name,
           description: vacation.description,
-          price: vacation.getDisplayPrice(),
-          inSeason: vacation.inSeason
+          inSeason: vacation.inSeason,
+          price: convertFromUSD(vacation.priceInCents / 100, currency),
+          qty: vacation.qty,
         };
       })
     };
+    switch (currency) {
+      case 'USD':
+        context.currencyUSD = 'selected';
+        break;
+      case 'GBP':
+        context.currencyGBP = 'selected';
+        break;
+      case 'BTC':
+        context.currencyBTC = 'selected';
+        break;
+    }
     res.render('vacations', context);
   });
 });
@@ -503,6 +538,11 @@ app.post('/notify-me-when-in-season', function(req, res) {
       return res.redirect(303, '/vacations');
     }
   );
+});
+
+app.get('/set-currency/:currency', function(req, res) {
+  req.session.currency = req.params.currency;
+  return res.redirect(303, '/vacations');
 });
 
 app.get('/epic-fail', function(req, res) {
