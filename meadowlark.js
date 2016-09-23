@@ -20,6 +20,9 @@ const credentials = require('./credentials.js');
 
 const emailService = require('./lib/email.js')(credentials);
 
+// Create a Mongo store to manage sessions
+const MongoStore = require('connect-mongo')(session);
+
 // set up handlebars view engine
 const handlebars = require('express-handlebars').create({
   defaultLayout: 'main',
@@ -103,9 +106,6 @@ app.use(session({
   saveUninitialized: false,
   secret: credentials.cookieSecret,
 })); */
-
-// Create a Mongo store to manage sessions
-const MongoStore = require('connect-mongo')(session);
 
 // Instantiate new Mongo store for the session & reuse Mongoose DB connection 
 app.use(session({
