@@ -1,12 +1,12 @@
-var Vacation = require('../models/vacation.js'),
-	Q = require('q'),
-	emailService = require('../lib/email.js')(require('../credentials.js'));
+const Vacation = require('../models/vacation.js');
+const	Q = require('q');
+const	emailService = require('../lib/email.js')(require('../credentials.js'));
 
-var VALID_EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+const VALID_EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
 
 // deserializes cart items from the database
 exports.middleware = function(req, res, next){
-	var cart = req.session.cart;
+	let cart = req.session.cart;
 	if(!cart || !cart.items) return next();
 	req.cart = {
 		items: cart.items.map(function(item){
@@ -16,7 +16,7 @@ exports.middleware = function(req, res, next){
 			};
 		})
 	};
-	var promises = req.cart.items.map(function(item){
+	let promises = req.cart.items.map(function(item){
 		return Q.Promise(function(resolve, reject){
 			Vacation.findOne({ sku: item.sku }, function(err, vacation){
 				if(err) return reject(err);
@@ -35,7 +35,7 @@ exports.middleware = function(req, res, next){
 };
 
 function addToCart(sku, guests, req, res, next){
-	var cart = req.session.cart || (req.session.cart = { items: [] });
+	let cart = req.session.cart || (req.session.cart = { items: [] });
 	Vacation.findOne({ sku: sku }, function(err, vacation){
 		if(err) return next(err);
 		if(!vacation) return next(new Error('Unknown vacation SKU: ' + sku));
@@ -60,7 +60,7 @@ exports.home = function(req, res, next){
 };
 
 exports.checkout = function(req, res, next){
-	var cart = req.session.cart;
+	let cart = req.session.cart;
 	if(!cart) next();
 	res.render('cart-checkout');
 };
@@ -74,9 +74,9 @@ exports.emailThankYou = function(req, res){
 };
 
 exports.checkoutProcessPost = function(req, res){
-	var cart = req.session.cart;
+	let cart = req.session.cart;
 	if(!cart) next(new Error('Cart does not exist.'));
-	var name = req.body.name || '', email = req.body.email || '';
+	let name = req.body.name || '', email = req.body.email || '';
 	// input validation
 	if(!email.match(VALID_EMAIL_REGEX)) return res.next(new Error('Invalid email address.'));
 	// assign a random cart ID; normally we would use a database ID here
