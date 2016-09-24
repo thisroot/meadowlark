@@ -5,13 +5,13 @@
    ========================================================================== */
 
 a.currency {
-  text-decoration: none;
+    text-decoration: none;
+}
+.currency.selected {
+    font-weight: bold;
+    font-size: 150%;
 }
 
-.currency.selected {
-  font-weight: bold;
-  font-size: 150%;
-}
 
 
 

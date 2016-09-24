@@ -1,10 +1,9 @@
-const mongoose = require('mongoose');
+var mongoose = require('mongoose');
 
-const vacationInSeasonListenerSchema = mongoose.Schema({
-  email: String,
-  skus: [String]
+var vacationInSeasonListenerSchema = mongoose.Schema({
+    email: String,
+    skus: [String],
 });
-
-const VacationInSeasonListener = mongoose.model('VacationInSeasonListener', vacationInSeasonListenerSchema);
+var VacationInSeasonListener = mongoose.model('VacationInSeasonListener', vacationInSeasonListenerSchema);
 
 module.exports = VacationInSeasonListener;

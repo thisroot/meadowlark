@@ -15,6 +15,7 @@ Vacation.find(function(err, vacations){
       priceInCents: 9995,
       tags: ['day trip', 'sailing', 'hood river', 'windsurfing', 'breweries'],
       inSeason: true,
+      requiresWaiver: true,
       maximumGuests: 16,
       available: true,
       packagesSold: 0
@@ -29,6 +30,7 @@ Vacation.find(function(err, vacations){
       priceInCents: 269995,
       tags: ['weekend getaway', 'oregon coast', 'beachcombing'],
       inSeason: false,
+      requiresWaiver: false,
       maximumGuests: 8,
       available: true,
       packagesSold: 0
