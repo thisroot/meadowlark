@@ -115,6 +115,7 @@ app.use(session({
   })
 }));
 
+
 // Define the dir for static files like images
 app.use(express.static(__dirname + '/public'));
 
