@@ -177,14 +177,26 @@ app.use('/', routes);
 // Create the API middleware & routes
 const Attraction = require('./models/attraction.js');
 
-app.use('/api', require('cors')());
-
 const apiOptions = {
-  context: '/api',
+  context: '/',
   domain: require('domain').create()
 };
 
 const rest = require('connect-rest').create( apiOptions );
+
+apiOptions.domain.on('error', function(err){
+    console.log('API domain error.\n', err.stack);
+    setTimeout(function(){
+        console.log('Server shutting down after API domain error.');
+        process.exit(1);
+    }, 5000);
+    server.close();
+    var worker = require('cluster').worker;
+    if(worker) worker.disconnect();
+});
+
+// link API into pipeline and adds connect-rest middleware to connect 
+app.use(vhost('api.*', rest.processRequest()));
 
 rest.get('/attractions', function(req, content, cb){
     Attraction.find({ approved: true }, function(err, attractions){
@@ -227,26 +239,6 @@ rest.get('/attraction/:id', function(req, content, cb){
         });
     });
 });
-
-/*
-apiOptions.domain.on('error', function(err){
-    console.log('API domain error.\n', err.stack);
-    setTimeout(function(){
-        console.log('Server shutting down after API domain error.');
-        process.exit(1);
-    }, 5000);
-    server.close();
-    var worker = require('cluster').worker;
-    if(worker) worker.disconnect();
-});
-*/
-
-// adds connect-rest middleware to connect 
-// app.use(rest.processRequest());
-
-// link API into pipeline and adds connect-rest middleware to connect 
-// app.use(vhost('api.*', rest.processRequest()));
-app.use(rest.processRequest());
 
 // add support for auto views
 var autoViews = {};
