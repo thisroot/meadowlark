@@ -9,6 +9,7 @@ const express = require('express');
 const fortune = require('./lib/fortune.js');
 const formidable = require('formidable');
 const fs = require('fs');
+const vhost = require('vhost');
 const routes = require('./routes');
 
 const app = express();
@@ -170,20 +171,82 @@ admin.get('/users', function (req, res) {
   res.render('admin/users');
 });
 
-// add routes
+// add main site routes
 app.use('/', routes);
 
 // Create the API middleware & routes
-app.use('/api', require('cors')());
+const Attraction = require('./models/attraction.js');
 
-const rest = require('connect-rest');
+app.use('/api', require('cors')());
 
 const apiOptions = {
   context: '/api',
   domain: require('domain').create()
 };
 
-app.use(rest.rester(apiOptions));
+const rest = require('connect-rest').create( apiOptions );
+
+rest.get('/attractions', function(req, content, cb){
+    Attraction.find({ approved: true }, function(err, attractions){
+        if(err) return cb({ error: 'Internal error.' });
+        cb(null, attractions.map(function(a){
+            return {
+                name: a.name,
+                description: a.description,
+                location: a.location,
+            };
+        }));
+    });
+});
+
+rest.post('/attraction', function(req, content, cb){
+    var a = new Attraction({
+        name: req.body.name,
+        description: req.body.description,
+        location: { lat: req.body.lat, lng: req.body.lng },
+        history: {
+            event: 'created',
+            email: req.body.email,
+            date: new Date(),
+        },
+        approved: false,
+    });
+    a.save(function(err, a){
+        if(err) return cb({ error: 'Unable to add attraction.' });
+        cb(null, { id: a._id });
+    }); 
+});
+
+rest.get('/attraction/:id', function(req, content, cb){
+    Attraction.findById(req.params.id, function(err, a){
+        if(err) return cb({ error: 'Unable to retrieve attraction.' });
+        cb(null, { 
+            name: a.name,
+            description: a.description,
+            location: a.location,
+        });
+    });
+});
+
+/*
+apiOptions.domain.on('error', function(err){
+    console.log('API domain error.\n', err.stack);
+    setTimeout(function(){
+        console.log('Server shutting down after API domain error.');
+        process.exit(1);
+    }, 5000);
+    server.close();
+    var worker = require('cluster').worker;
+    if(worker) worker.disconnect();
+});
+*/
+
+// adds connect-rest middleware to connect 
+// app.use(rest.processRequest());
+
+// link API into pipeline and adds connect-rest middleware to connect 
+// app.use(vhost('api.*', rest.processRequest()));
+app.use(rest.processRequest());
 
 // add support for auto views
 var autoViews = {};
