@@ -173,6 +173,18 @@ admin.get('/users', function (req, res) {
 // add routes
 app.use('/', routes);
 
+// Create the API middleware & routes
+app.use('/api', require('cors')());
+
+const rest = require('connect-rest');
+
+const apiOptions = {
+  context: '/api',
+  domain: require('domain').create()
+};
+
+app.use(rest.rester(apiOptions));
+
 // add support for auto views
 var autoViews = {};
 
