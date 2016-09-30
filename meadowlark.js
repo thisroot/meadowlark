@@ -178,7 +178,7 @@ app.use('/', routes);
 const Attraction = require('./models/attraction.js');
 
 const apiOptions = {
-  context: '/',
+  context: '',
   domain: require('domain').create()
 };
 
