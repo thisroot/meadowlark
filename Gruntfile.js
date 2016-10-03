@@ -34,7 +34,9 @@ module.exports = function(grunt){
 					}
 				},
 				files: {
-					'public/css/main.css': 'less/main.less'
+					'public/css/main.css': 'less/main.less',
+					'public/css/cart.css': 'less/cart.less'
+					
 				}
 			}
 		}

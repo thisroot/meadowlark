@@ -40,9 +40,12 @@
     "chai": "^3.5.0",
     "grunt": "^1.0.1",
     "grunt-cafe-mocha": "^0.1.13",
+    "grunt-contrib-cssmin": "^1.0.2",
     "grunt-contrib-jshint": "^1.0.0",
     "grunt-contrib-less": "^1.4.0",
+    "grunt-contrib-uglify": "^2.0.0",
     "grunt-eslint": "^19.0.0",
+    "grunt-hashres": "^0.4.1",
     "mocha": "^3.0.2",
     "restler": "^3.4.0"
   }
