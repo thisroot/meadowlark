@@ -11,10 +11,19 @@ const formidable = require('formidable');
 const fs = require('fs');
 const vhost = require('vhost');
 const routes = require('./routes');
+const static = require('./lib/static.js').map;
 
 const app = express();
 
 const credentials = require('./credentials.js');
+
+app.use(function (req, res, next) {
+  let now = new Date();
+  res.locals.logoImage = now.getMonth() == 9 && now.getDate() == 3 ?
+    static('/img/logo_bud_clark.png') : 
+    static('/img/logo.png');
+    next();
+});
 
 // set up handlebars view engine
 const handlebars = require('express-handlebars').create({
