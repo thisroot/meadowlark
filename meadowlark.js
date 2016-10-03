@@ -211,6 +211,7 @@ rest.get('/attractions', function(req, content, cb){
     });
 });
 
+
 rest.post('/attraction', function(req, content, cb){
     var a = new Attraction({
         name: req.body.name,
