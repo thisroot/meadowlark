@@ -11,12 +11,13 @@ const formidable = require('formidable');
 const fs = require('fs');
 const vhost = require('vhost');
 const routes = require('./routes');
-const static = require('./lib/static.js').map;
+
 
 const app = express();
 
 const credentials = require('./credentials.js');
 
+const static = require('./lib/static.js').map;
 app.use(function (req, res, next) {
   let now = new Date();
   res.locals.logoImage = now.getMonth() == 9 && now.getDate() == 3 ?
@@ -41,6 +42,10 @@ const handlebars = require('express-handlebars').create({
 });
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
+
+// set up css/js bundling
+var bundler = require('connect-bundle')(require('./config.js'));
+app.use(bundler);
 
 app.set('port', process.env.PORT || 3000);
 

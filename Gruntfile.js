@@ -5,9 +5,9 @@ module.exports = function(grunt){
 		'grunt-cafe-mocha',
 		'grunt-contrib-jshint',
 		'grunt-contrib-less',
-		// 'grunt-contrib-uglify',
-		// 'grunt-contrib-cssmin',
-		// 'grunt-hashres',
+		'grunt-contrib-uglify',
+		'grunt-contrib-cssmin',
+		'grunt-hashres',
 		// 'grunt-lint-pattern',
 	].forEach(function(task){
 		grunt.loadNpmTasks(task);
@@ -39,6 +39,39 @@ module.exports = function(grunt){
 					
 				}
 			}
+		},
+		uglify: {
+			all: {
+				files: {
+					'public/js/meadowlark.min.js': ['public/js/**/*.js']
+				}
+			}
+		},
+		cssmin: {
+			combine: {
+				files: {
+					'public/css/meadowlark.css': ['public/css/**/*.css',
+					'!public/css/meadowlark*.css']
+				}
+			},
+			minify: {
+				src: 'public/css/meadowlark.css',
+				dest: 'public/css/meadowlark.min.css',
+			},
+		},
+		hashres: {
+			options: {
+				fileNameFormat: '${name}.${hash}.${ext}'
+			},
+			all: {
+				src: [
+					'public/js/meadowlark.min.js',
+					'public/css/meadowlark.min.css'
+				],
+				dest: [
+					'config.js',
+				]
+			},
 		}
 	});	
 
