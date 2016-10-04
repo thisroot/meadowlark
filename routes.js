@@ -5,6 +5,7 @@ const	cart = require('./handlers/cart.js');
 const	cartValidation = require('./lib/cartValidation.js');
 const	contact = require('./handlers/contact.js');
 const	samples = require('./handlers/sample.js');
+const customerController = require('./controllers/customer.js');
 
 const routes = require('express').Router();
 
@@ -48,5 +49,8 @@ routes.get('/jquery-test', samples.jqueryTest);
 routes.get('/nursery-rhyme', samples.nurseryRhyme);
 routes.get('/data/nursery-rhyme', samples.nurseryRhymeData);
 routes.get('/epic-fail', samples.epicFail);
+
+// customer routes
+customerController.registerRoutes(routes);
 
 module.exports = routes;

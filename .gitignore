@@ -23,3 +23,4 @@ testem.log
 credentials.js
 config.json
 /data
+/ssl
