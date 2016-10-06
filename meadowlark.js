@@ -4,7 +4,7 @@ require('./db/connect.js');
 // Seed the collections if necessary...
 require('./db/seed.js');
 
-const http = require('http');
+const https = require('https');
 const express = require('express');
 const fortune = require('./lib/fortune.js');
 const formidable = require('formidable');
@@ -108,6 +108,7 @@ switch (app.get('env')) {
     break;
 }
 
+// Allows you to manage cookies....
 app.use(require('cookie-parser')(credentials.cookieSecret));
 
 // Instantiate new Mongo store for the session & reuse Mongoose DB connection 
@@ -123,6 +124,13 @@ app.use(session({
     mongooseConnection: mongoose.connection
   })
 }));
+
+// Code to help prevent CSRF...
+app.use(require('csurf')());
+app.use(function(req, res, next) {
+	res.locals._csrfToken = req.csrfToken();
+	next();
+});
 
 app.use(express.static(__dirname + '/public'));
 app.use(require('body-parser')());
@@ -288,12 +296,15 @@ app.use(function (err, req, res, next) {
   res.render('500');
 });
 
-var server;
+const options = {
+  key: fs.readFileSync(__dirname + '/ssl/meadowlark.pem'),
+  cert: fs.readFileSync(__dirname + '/ssl/meadowlark.crt')
+};
 
 function startServer() {
-  server = http.createServer(app).listen(app.get('port'), function () {
+  https.createServer(options, app).listen(app.get('port'), function () {
     console.log('Express started in ' + app.get('env') +
-      ' mode on http://localhost:' + app.get('port') +
+      ' mode on https://localhost:' + app.get('port') +
       '; press Ctrl-C to terminate.');
   });
 }
