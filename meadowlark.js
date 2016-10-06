@@ -109,7 +109,7 @@ switch (app.get('env')) {
 }
 
 // Allows you to manage cookies....
-app.use(require('cookie-parser')(credentials.cookieSecret));
+app.use(require('cookie-parser')());
 
 // Instantiate new Mongo store for the session & reuse Mongoose DB connection 
 // Create a Mongo store to manage sessions
@@ -125,15 +125,15 @@ app.use(session({
   })
 }));
 
+app.use(express.static(__dirname + '/public'));
+app.use(require('body-parser')());
+
 // Code to help prevent CSRF...
 app.use(require('csurf')());
 app.use(function(req, res, next) {
 	res.locals._csrfToken = req.csrfToken();
 	next();
 });
-
-app.use(express.static(__dirname + '/public'));
-app.use(require('body-parser')());
 
 // flash message middleware
 app.use(function (req, res, next) {
