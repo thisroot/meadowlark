@@ -196,6 +196,20 @@ admin.get('/users', function (req, res) {
   res.render('admin/users');
 });
 
+// authentication
+var auth = require('./lib/auth.js')(app, {
+	baseUrl: process.env.BASE_URL,
+	providers: credentials.authProviders,
+	successRedirect: '/account',
+	failureRedirect: '/unauthorized',
+});
+
+// auth.init() links in Passport middleware:
+auth.init();
+
+// now we can specify our auth routes:
+auth.registerRoutes();
+
 // add main site routes
 app.use('/', routes);
 
@@ -220,30 +234,6 @@ apiOptions.domain.on('error', function(err){
     if(worker) worker.disconnect();
 });
 
-// authentication
-var auth = require('./lib/auth.js')(app, {
-	baseUrl: process.env.BASE_URL,
-	providers: credentials.authProviders,
-	successRedirect: '/account',
-	failureRedirect: '/unauthorized',
-});
-
-// auth.init() links in Passport middleware:
-auth.init();
-
-// now we can specify our auth routes:
-auth.registerRoutes();
-
-app.get('/unauthorized', function(req, res) {
-	res.status(403).render('unauthorized');
-});
-
-// account routes
-app.get('/account', function (req, res) {
-  if(!req.session.passport.user)
-    return res.redirect(303, '/unauthorized');
-  res.render('account', {username: req.user.name});
-});
 
 // link API into pipeline and adds connect-rest middleware to connect 
 app.use(vhost('api.*', rest.processRequest()));

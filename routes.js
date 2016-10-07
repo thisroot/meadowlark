@@ -53,4 +53,44 @@ routes.get('/epic-fail', samples.epicFail);
 // customer routes
 customerController.registerRoutes(routes);
 
+routes.get('/unauthorized', function(req, res) {
+	res.status(403).render('unauthorized');
+});
+
+// account routes
+// authorization helpers
+function customerOnly(req, res, next){
+	if(req.user && req.user.role==='customer') return next();
+	// we want customer-only pages to know they need to logon
+	res.redirect(303, '/unauthorized');
+}
+function employeeOnly(req, res, next){
+	if(req.user && req.user.role==='employee') return next();
+	// we want employee-only authorization failures to be "hidden", to
+	// prevent potential hackers from even knowhing that such a page exists
+	next('route');
+}
+function allow(roles) {
+	return function(req, res, next) {
+		if(req.user && roles.split(',').indexOf(req.user.role)!==-1) return next();
+		res.redirect(303, '/unauthorized');
+	};
+}
+
+routes.get('/account', allow('customer,employee'), function(req, res){
+	res.render('account', { username: req.user.name });
+});
+routes.get('/account/order-history', customerOnly, function(req, res){
+	res.render('account/order-history');
+});
+routes.get('/account/email-prefs', customerOnly, function(req, res){
+	res.render('account/email-prefs');
+});
+
+// employer routes
+routes.get('/sales', employeeOnly, function(req, res){
+	res.render('sales');
+});
+
+
 module.exports = routes;
