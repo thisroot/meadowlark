@@ -11,11 +11,16 @@ const formidable = require('formidable');
 const fs = require('fs');
 const vhost = require('vhost');
 const routes = require('./routes');
-
+const	Q = require('q');
 
 const app = express();
 
 const credentials = require('./credentials.js');
+
+const twitter = require('./lib/twitter')({
+	consumerKey: credentials.twitter.consumerKey,
+	consumerSecret: credentials.twitter.consumerSecret,
+});
 
 const static = require('./lib/static.js').map;
 app.use(function (req, res, next) {
@@ -182,6 +187,47 @@ app.use(function (req, res, next) {
   res.locals.partials.weatherContext = getWeatherData();
   next();
 });
+
+// twitter integration
+var topTweets = {
+	count: 10,
+	lastRefreshed: 0,
+	refreshInterval: 15 * 60 * 1000,
+	tweets: [],
+};
+
+function getTopTweets(cb){
+	if(Date.now() < topTweets.lastRefreshed + topTweets.refreshInterval) {
+		return setImmediate(function() {
+            cb(topTweets.tweets);
+        });
+    }
+
+	twitter.search('#travel', topTweets.count, function(result){
+		var formattedTweets = [];
+		var embedOpts = { omit_script: 1 };
+		var promises = result.statuses.map(function(status){
+            return Q.Promise(function(resolve){
+    			twitter.embed(status.id_str, embedOpts, function(embed){
+    				formattedTweets.push(embed.html);
+    				resolve();
+    			});
+            });
+		});
+		Q.all(promises).then(function(){
+			topTweets.lastRefreshed = Date.now();
+			cb(topTweets.tweets = formattedTweets);
+		});
+	});
+}
+// mmiddleware to add top tweets to context
+app.use(function(req, res, next) {
+	getTopTweets(function(tweets) {
+		res.locals.topTweets = tweets;
+		next();
+	});
+});
+
 
 // create "admin" subdomain...this should appear
 // before all your other routes
