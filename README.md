@@ -1,2 +1,2 @@
 # meadowlark
-## Demo site from Ethan Brown's Node book
+## Demo. site from Ethan Brown's Node book
